@@ -14,10 +14,10 @@ DEFAULT_DB = BASE_DIR / "port-berth.db"
 DEFAULT_PORT = 8321
 
 
-def build_service(db_path: str) -> Service:
+def build_service(db_path: str, clock=None) -> Service:
     repository = Repository(db_path)
     audit = AuditRecorder(repository)
-    return Service(repository, DomainRules(), audit)
+    return Service(repository, DomainRules(), audit, clock=clock)
 
 
 def parse_args():

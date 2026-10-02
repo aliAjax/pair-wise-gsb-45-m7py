@@ -23,9 +23,19 @@ class Conflict(DomainError):
     code = "conflict"
 
 
+class LeaseExpired(Conflict):
+    status = 409
+    code = "lease_expired"
+
+
 class PermissionDenied(DomainError):
     status = 403
     code = "permission_denied"
+
+
+class ShiftClosed(PermissionDenied):
+    status = 403
+    code = "shift_closed"
 
 
 @dataclass(frozen=True)
