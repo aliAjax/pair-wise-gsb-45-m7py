@@ -14,10 +14,14 @@ DEFAULT_DB = BASE_DIR / "port-berth.db"
 DEFAULT_PORT = 8321
 
 
-def build_service(db_path: str) -> Service:
+def build_service(db_path: str, clock=None) -> Service:
     repository = Repository(db_path)
     audit = AuditRecorder(repository)
-    return Service(repository, DomainRules(), audit)
+    service = Service(repository, DomainRules(), audit, clock=clock)
+    recovered = service.recover_expired_leases()
+    if recovered:
+        print("恢复时识别到%s份过期航道租约" % len(recovered), flush=True)
+    return service
 
 
 def parse_args():

@@ -28,6 +28,10 @@ class PermissionDenied(DomainError):
     code = "permission_denied"
 
 
+class LeaseConflict(Conflict):
+    code = "lease_conflict"
+
+
 @dataclass(frozen=True)
 class Actor:
     user_id: str

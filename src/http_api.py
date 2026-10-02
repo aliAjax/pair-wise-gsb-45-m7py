@@ -87,6 +87,24 @@ def make_handler(service: Any, static_dir: Path):
                 if parsed.path == "/api/stats":
                     self._send(200, service.stats(self._actor()))
                     return
+                if parsed.path == "/api/leases":
+                    query = parse_qs(parsed.query)
+                    record_id = query.get("record_id", [None])[0]
+                    leases = service.list_leases(
+                        self._actor(),
+                        channel=query.get("channel", [None])[0],
+                        record_id=int(record_id) if record_id else None,
+                        limit=int(query.get("limit", ["100"])[0]),
+                    )
+                    self._send(200, {"items": leases})
+                    return
+                if parsed.path == "/api/shifts/current":
+                    self._send(200, service.current_shift(self._actor()))
+                    return
+                if parsed.path == "/api/audit/system":
+                    query = parse_qs(parsed.query)
+                    self._send(200, {"items": service.system_events(self._actor(), limit=int(query.get("limit", ["100"])[0]))})
+                    return
                 self._send(404, {"error": "not_found", "message": "路径不存在"})
             except Exception as exc:
                 self._handle_error(exc)
@@ -106,6 +124,9 @@ def make_handler(service: Any, static_dir: Path):
                         raise ValidationError("expected_version必须是整数")
                     record = service.act(self._actor(), int(match.group(1)), version, match.group(2), body.get("data", {}))
                     self._send(200, record)
+                    return
+                if parsed.path == "/api/shifts/handover":
+                    self._send(200, service.handover_shift(self._actor(), body.get("officer_id", "")))
                     return
                 self._send(404, {"error": "not_found", "message": "路径不存在"})
             except Exception as exc:
